@@ -1231,7 +1231,6 @@ open_if(const char * inf, int64_t skip, int bpt, struct flags_t * ifp,
 {
     int infd, flags, fl, t, res;
     char ebuff[EBUFF_SZ];
-    struct sg_simple_inquiry_resp sir;
 
     *in_typep = dd_filetype(inf);
     if (vb)
@@ -1266,14 +1265,6 @@ open_if(const char * inf, int64_t skip, int bpt, struct flags_t * ifp,
         }
         if (vb)
             pr2serr("        open input(sg_io), flags=0x%x\n", fl | flags);
-        if (sg_simple_inquiry(infd, &sir, false, (vb ? (vb - 1) : 0))) {
-            pr2serr("INQUIRY failed on %s\n", inf);
-            goto other_err;
-        }
-        ifp->pdt = sir.peripheral_type;
-        if (vb)
-            pr2serr("    %s: %.8s  %.16s  %.4s  [pdt=%d]\n", inf, sir.vendor,
-                    sir.product, sir.revision, ifp->pdt);
         if (! (FT_BLOCK & *in_typep)) {
             t = blk_sz * bpt;
             res = ioctl(infd, SG_SET_RESERVED_SIZE, &t);
@@ -1359,7 +1350,6 @@ open_of(const char * outf, int64_t seek, int bpt, struct flags_t * ofp,
 {
     int outfd, flags, t, res;
     char ebuff[EBUFF_SZ];
-    struct sg_simple_inquiry_resp sir;
 
     *out_typep = dd_filetype(outf);
     if (vb)
@@ -1388,14 +1378,6 @@ open_of(const char * outf, int64_t seek, int bpt, struct flags_t * ofp,
         }
         if (vb)
             pr2serr("        open output(sg_io), flags=0x%x\n", flags);
-        if (sg_simple_inquiry(outfd, &sir, false, (vb ? (vb - 1) : 0))) {
-            pr2serr("INQUIRY failed on %s\n", outf);
-            goto other_err;
-        }
-        ofp->pdt = sir.peripheral_type;
-        if (vb)
-            pr2serr("    %s: %.8s  %.16s  %.4s  [pdt=%d]\n", outf, sir.vendor,
-                    sir.product, sir.revision, ofp->pdt);
         if (! (FT_BLOCK & *out_typep)) {
             t = blk_sz * bpt;
             res = ioctl(outfd, SG_SET_RESERVED_SIZE, &t);
